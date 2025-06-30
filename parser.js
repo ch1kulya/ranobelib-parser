@@ -5,7 +5,7 @@ const path = require('path');
 const BASE_URL = 'https://ranobelib.me/ru/122448--shadow-slave/read';
 const BID = 13947;
 const START_CHAPTER = 0;
-const END_CHAPTER = 450;
+const END_CHAPTER = 10;
 let VERSIONS = [0, 1, 2, 3, 4, 5];
 const DELAY = 2000;
 
@@ -21,6 +21,10 @@ async function loadTitles() {
 }
 async function saveTitles() {
   await fs.writeFile(titlesPath, JSON.stringify(titles, null, 2), 'utf-8');
+}
+function processLines(paragraph) {
+  paragraph = paragraph.replace(/—{7,}/g, '***');
+  return paragraph;
 }
 
 let successCount = {};
@@ -82,6 +86,7 @@ function extractTitle(rawTitle) {
         let paragraphs = await page.$$eval('main.lp_b div.text-content p[data-paragraph-index]', nodes =>
           nodes.map(n => n.textContent.trim().replace(/\n+/g, ' '))
         );
+        paragraphs = paragraphs.map(processLines);
         const markdown = paragraphs.join('\n\n');
 
         await fs.writeFile(path.join('chapters', `${chapter}.md`), markdown, 'utf-8');
